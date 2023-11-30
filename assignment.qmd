@@ -1,0 +1,144 @@
+---
+title: "R, Group A: Practical work"
+format: html
+editor: visual
+---
+
+## Exercise 1
+
+The EXCEL workbook SelectoStudy.xlsx contains several variables of a cross-sectional study, the so-called "Selecto Study", on the association between cumulative ecstasy use and cognitive dysfunction, which was car- ried from 2008 to 2010 in the *Hospital del Mar Research Institute* (<https://www.imim.es/en_index.html)1.> The workbook has three sheets that contain the data of each of the three study groups (Ecstasy (XTC)) users, cannabis users, and non-users (control group)) and a fourth sheet with the labels of the variables and some additional information on the neuropsychological tests the study participants had to do
+
+### (a)
+
+Import the data of the three study groups into R and create a single data frame with name selecto that contains all data and also a variable (group) that identifies the study group of each volunteer. This variable should be a factor whose first level corresponds to the group of ecstasy users. In addition, variables sex and city should also be factors.
+
+```{r}
+library(openxlsx)
+library(dplyr)
+library(lubridate)
+
+
+```
+
+```{r}
+XTC <- read.xlsx("SelectoStudy.xlsx",sheet = "XTC",startRow = 3)
+Cannabis <- read.xlsx("SelectoStudy.xlsx",sheet = "Cannabis",startRow = 3)
+Control <- read.xlsx("SelectoStudy.xlsx",sheet = "Control",startRow = 3)
+
+XTC <- mutate(XTC, "group" = "XTC")
+Cannabis <- mutate(Cannabis, "group" = "Cannabis")
+Control <- mutate(Control, "group" = "Control")
+
+selecto <- rbind(XTC, Cannabis, Control)
+
+selecto[ , c("sex", "city", "group")] <- 
+  lapply(selecto[ , c("sex", "city", "group")] , factor)
+
+```
+
+### (b)
+
+How many volunteers are in each group?
+
+```{selecto %>%}
+  group_by(group) %>%
+  summarise(number_of_volunteers = n())
+```
+
+### (c)
+
+How many volunteers with compete information, i.e., no missing values, are in each group?
+
+```{r}
+na.omit(selecto) %>%
+  group_by(group) %>%
+  summarise(number_of_volunteers = n())
+
+```
+
+### (d)
+
+Which volunteer has most missing data?
+
+```{r}
+selecto[which.max(rowSums(is.na(selecto))), ]
+```
+
+### (e)
+
+Convert the variables birth and studydate in date variables and add the volunteers' ages as a new variable to the data frame.
+
+```{r}
+selecto <- selecto %>%
+  mutate(
+    birth = as.Date(birth, format = "%Y-%m-%d"),
+    studydat = as.Date(studydat, format = "%Y-%m-%d"),
+    age = as.vector(trunc(difftime(studydat, birth) / 365.25))
+  )
+
+```
+
+### (f)
+
+Order the rows of the data frame by study group, gender, and decreasing age.
+
+```{r}
+selecto <- selecto %>%
+  arrange(group, sex, desc(age))
+```
+
+### (g)
+
+Which are the ages of the first and last volunteer and from which cities are they?
+
+```{r}
+selecto[c(1, nrow(selecto)), c("age", "city")]
+```
+
+### (h)
+
+Choose randomly two volunteers in each group and replace their residence by Gav\`a
+
+```{r}
+set.seed(123)
+
+selecto$city <- as.character(selecto$city)
+selecto[sample(nrow(selecto), 2), "city"] <- "Gava"
+
+```
+
+### (i)
+
+Which is the proportion of volunteers in each group that were born on a weekend?
+
+```{r}
+selecto %>%
+  mutate(weekday = weekdays(selecto$birth)) %>%
+  group_by(group) %>%
+  summarize(proportion_weekend = mean(weekday %in% c("Saturday", "Sunday"), 
+                                      na.rm = TRUE))
+```
+
+### (j)
+
+Create the ordinal variable agecat that groups the volunteers' ages in four categories: ≤ 20, 21 -- 25, 26 -- 30, and \> 30 years.
+
+```{r}
+agecat_fun <- function(age) {
+  if (age <= 20) {
+    return("young")
+  }
+  if ((age > 20) & (age < 26)){
+    return("young adult")
+  }
+  if ((age > 25) & (age < 31)){
+    return("adult")
+  }
+  else{
+    return("old")
+  }
+}
+
+selecto <- selecto %>%
+  mutate(agecat = sapply(age, agecat_fun))
+```
