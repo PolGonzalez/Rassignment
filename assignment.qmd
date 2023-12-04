@@ -6,7 +6,7 @@ editor: visual
 
 ## Exercise 1
 
-The EXCEL workbook SelectoStudy.xlsx contains several variables of a cross-sectional study, the so-called "Selecto Study", on the association between cumulative ecstasy use and cognitive dysfunction, which was car- ried from 2008 to 2010 in the *Hospital del Mar Research Institute* (<https://www.imim.es/en_index.html)1.> The workbook has three sheets that contain the data of each of the three study groups (Ecstasy (XTC)) users, cannabis users, and non-users (control group)) and a fourth sheet with the labels of the variables and some additional information on the neuropsychological tests the study participants had to do
+The EXCEL workbook SelectoStudy.xlsx contains several variables of a cross-sectional study, the so-called "Selecto Study", on the association between cumulative ecstasy use and cognitive dysfunction, which was car- ried from 2008 to 2010 in the *Hospital del Mar Research Institute* (<https://www.imim.es/en_index.html)1.> The workbook has three sheets that contain the data of each of the three study groups (Ecstasy (XTC)) users, cannabis users, and non-users (control group)) and a fourth sheet with the labels of the variables and some additional information on the neuropsychological tests the study participants had to do.
 
 ### (a)
 
@@ -16,8 +16,7 @@ Import the data of the three study groups into R and create a single data frame 
 library(openxlsx)
 library(dplyr)
 library(lubridate)
-
-
+library(descr)
 ```
 
 ```{r}
@@ -40,7 +39,8 @@ selecto[ , c("sex", "city", "group")] <-
 
 How many volunteers are in each group?
 
-```{selecto %>%}
+```{r}
+selecto %>%
   group_by(group) %>%
   summarise(number_of_volunteers = n())
 ```
@@ -97,7 +97,7 @@ selecto[c(1, nrow(selecto)), c("age", "city")]
 
 ### (h)
 
-Choose randomly two volunteers in each group and replace their residence by Gav\`a
+Choose randomly two volunteers in each group and replace their residence by Gavà
 
 ```{r}
 set.seed(123)
@@ -112,6 +112,7 @@ selecto[sample(nrow(selecto), 2), "city"] <- "Gava"
 Which is the proportion of volunteers in each group that were born on a weekend?
 
 ```{r}
+Sys.setlocale("LC_TIME", "English")
 selecto %>%
   mutate(weekday = weekdays(selecto$birth)) %>%
   group_by(group) %>%
@@ -142,3 +143,47 @@ agecat_fun <- function(age) {
 selecto <- selecto %>%
   mutate(agecat = sapply(age, agecat_fun))
 ```
+
+### (k)
+
+Use the *CrossTable* function of the descr package to represent the conditional distribution of the variable agecat per study group
+
+```{r}
+CrossTable(selecto$group,selecto$agecat)
+```
+
+### (l)
+
+Write the data frame selecto to a new sheet named \'Selecto\' of the EXCEL workbook Selecto.xlsx.
+
+```{r}
+write.xlsx(selecto,"Selecto.xlsx",sheetName = "Selecto",append = FALSE)
+```
+
+### (m)
+
+Program a pipe with the operator \|\> to create the following subset of the data frame selecto and write it
+to a new sheet named \'SubsetSelecto\' of the EXCEL workbook Selecto.xlsx. The subset should contain
+the data of those volunteers in the ecstasy or cannabis group that were born in the 80ies and whose
+switS1 score was known. In addition, the scores of the neuropsychological variables cvltot, reymi,
+reymd, reycop, and animtotal should be scaled so that they have mean 0 and standard deviation 1, and
+the variables birth and studydat should be removed.
+
+```{r}
+SubsetSelecto <- selecto %>% filter(group != "Control") %>% 
+  filter(between(birth,as.Date('1980-01-01'),as.Date('1989-12-31'))) %>%
+  filter(!is.na(switS1)) %>%
+  mutate(birth = NULL, studydat = NULL,cvltot = scale(cvltot),
+         reymd = scale(reymd),reycop = scale(reycop),animtotal = scale(animtotal))
+{r}
+wb <- createWorkbook()
+addWorksheet(wb, "Selecto")
+addWorksheet(wb, "SubsetSelecto")
+
+writeData(wb, "Selecto",selecto, startRow = 1, startCol = 1)
+writeData(wb, "SubsetSelecto",SubsetSelecto, startRow = 1, startCol = 1)
+
+saveWorkbook(wb, file = "Selecto.xlsx", overwrite = TRUE)
+```
+
+## Exercise 2
