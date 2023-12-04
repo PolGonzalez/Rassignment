@@ -175,7 +175,7 @@ SubsetSelecto <- selecto %>% filter(group != "Control") %>%
   filter(!is.na(switS1)) %>%
   mutate(birth = NULL, studydat = NULL,cvltot = scale(cvltot),
          reymd = scale(reymd),reycop = scale(reycop),animtotal = scale(animtotal))
-{r}
+
 wb <- createWorkbook()
 addWorksheet(wb, "Selecto")
 addWorksheet(wb, "SubsetSelecto")
