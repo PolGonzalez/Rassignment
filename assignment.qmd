@@ -154,7 +154,7 @@ CrossTable(selecto$group,selecto$agecat)
 
 ### (l)
 
-Write the data frame selecto to a new sheet named \'Selecto\' of the EXCEL workbook Selecto.xlsx.
+Write the data frame selecto to a new sheet named 'Selecto' of the EXCEL workbook Selecto.xlsx.
 
 ```{r}
 write.xlsx(selecto,"Selecto.xlsx",sheetName = "Selecto",append = FALSE)
@@ -162,12 +162,7 @@ write.xlsx(selecto,"Selecto.xlsx",sheetName = "Selecto",append = FALSE)
 
 ### (m)
 
-Program a pipe with the operator \|\> to create the following subset of the data frame selecto and write it
-to a new sheet named \'SubsetSelecto\' of the EXCEL workbook Selecto.xlsx. The subset should contain
-the data of those volunteers in the ecstasy or cannabis group that were born in the 80ies and whose
-switS1 score was known. In addition, the scores of the neuropsychological variables cvltot, reymi,
-reymd, reycop, and animtotal should be scaled so that they have mean 0 and standard deviation 1, and
-the variables birth and studydat should be removed.
+Program a pipe with the operator \|\> to create the following subset of the data frame selecto and write it to a new sheet named 'SubsetSelecto' of the EXCEL workbook Selecto.xlsx. The subset should contain the data of those volunteers in the ecstasy or cannabis group that were born in the 80ies and whose switS1 score was known. In addition, the scores of the neuropsychological variables cvltot, reymi, reymd, reycop, and animtotal should be scaled so that they have mean 0 and standard deviation 1, and the variables birth and studydat should be removed.
 
 ```{r}
 SubsetSelecto <- selecto %>% filter(group != "Control") %>% 
@@ -187,3 +182,5 @@ saveWorkbook(wb, file = "Selecto.xlsx", overwrite = TRUE)
 ```
 
 ## Exercise 2
+
+## Exercise 3
