@@ -184,3 +184,32 @@ saveWorkbook(wb, file = "Selecto.xlsx", overwrite = TRUE)
 ## Exercise 2
 
 ## Exercise 3
+
+```{r}
+library(rvest)
+
+
+champions <- function(country,years){
+    if (country == "Spain") {
+  url <- "https://www.worldfootball.net/winner/esp-primera-division/"
+  } else if (country == "Germany") {
+  url <- "https://www.worldfootball.net/winner/bundesliga/"
+  } else if (country == "Andorra") {
+  url <- "https://www.worldfootball.net/winner/and-1a-divisio/"
+  } else if (country == "Austria") {
+  url <- "https://www.worldfootball.net/winner/aut-bundesliga/"
+  }else if (country == "England") {
+  url <- "https://www.worldfootball.net/winner/eng-premier-league/"
+  }else {
+    warning("The country selected is not among the function's country list.")
+    return()
+  }
+  winners <- as.data.frame(html_table(read_html(url))[1])
+  df_sub <- subset(winners,Year %in% years,select = -c(Var.2,Var.4))
+  res <- df_sub %>% count(Winner) %>% mutate("%" = n/length(years))
+  cat("Champions (male football) in",country,"in",years)
+  print(res)
+}
+champions("England",c(1959,1984,2001,2010,2012,2023))
+champions("ee",2023)
+```
