@@ -201,15 +201,19 @@ champions <- function(country,years){
   }else if (country == "England") {
   url <- "https://www.worldfootball.net/winner/eng-premier-league/"
   }else {
-    warning("The country selected is not among the function's country list.")
-    return()
+    stop("The country selected is not among the function's country list.")
+
   }
   winners <- as.data.frame(html_table(read_html(url))[1])
+  if ((min(years) < min(winners$Year) )| (max(years) > max(winners$Year)) ){
+    warning("Some of the selected years are out of bounds for this league.")}
   df_sub <- subset(winners,Year %in% years,select = -c(Var.2,Var.4))
   res <- df_sub %>% count(Winner) %>% mutate("%" = n/length(years))
   cat("Champions (male football) in",country,"in",years)
   print(res)
 }
+
 champions("England",c(1959,1984,2001,2010,2012,2023))
 champions("ee",2023)
+champions("England",1723)
 ```
